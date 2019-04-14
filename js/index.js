@@ -50,12 +50,14 @@ function bindNodeEvents() {
 
 function bindDragEvents() {
     let $dragged;
+    let moveHeight = 0;
     let $configForm = $('#configForm');
 
     $configForm.on('dragstart', function (event) {
         // 保存拖动元素的引用(ref.)
-        if($(event.target).hasClass('form-group')){
+        if ($(event.target).hasClass('form-group')) {
             $dragged = $(event.target);
+            moveHeight = $dragged.outerHeight();
             // 使其半透明
             event.target.style.opacity = .5;
         }
@@ -63,34 +65,37 @@ function bindDragEvents() {
         // prevent default to allow drop
         event.preventDefault();
     }).on('dragenter', function (event) {
-        event.target.style.background = "purple";
+        $getCurTarget(event).css('margin-top', moveHeight);
     }).on('dragleave', function (event) {
-        event.target.style.background = "";
+        $getCurTarget(event).css('margin-top', 0);
     }).on('dragend', function (event) {
         // 重置透明度
-        // event.target.style.background = "";
         $dragged.attr('draggable', "").css('opacity', '');
     }).on('drop', function (event) {
         // 阻止默认动作（如打开一些元素的链接）
         event.preventDefault();
-        let $curTarget = $(event.target);
-        // let $curTargetParent = $curTarget.parent();
+        let $curTarget = $getCurTarget(event);
+        $curTarget.css('margin-top', 0);
 
-        event.target.style.background = "";
-
-        if ($curTarget.hasClass('form-group')) {
-            if($curTarget.find('.childContent').size() > 0){
-                $curTarget.find('.childContent').prepend($dragged.css('opacity', '').remove());
-            }else{
-                $curTarget.before($dragged.css('opacity', '').remove());
-            }
-        } else if ($curTarget.hasClass('childContent')) {
-            $curTarget.before($dragged.css('opacity', '').remove());
-        }else{
-            $curTarget = $curTarget.parents('.form-group').eq(0);
-            $curTarget.before($dragged.css('opacity', '').remove());
+        if($curTarget.is($dragged)){
+            console.log(11);
+            return false;
         }
+
+        $curTarget.before($dragged.css('opacity', '').remove());
     });
+}
+
+function $getCurTarget(target){
+    let $curTarget = $(event.target);
+
+    if ($curTarget.hasClass('childContent') || ($curTarget.hasClass('form-group') && $curTarget.find('.childContent').size() > 0)) {
+        $curTarget = $curTarget.find('.form-group').eq(0);
+    } else {
+        $curTarget = $curTarget.parents('.form-group').eq(0);
+    }
+
+    return $curTarget;
 }
 
 init();
