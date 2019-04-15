@@ -1,30 +1,30 @@
+let downTpl = `<svg height="16" class="octicon octicon-chevron-down" viewBox="0 0 10 16" version="1.1" width="10" aria-hidden="true"><path fill-rule="evenodd" d="M5 11L0 6l1.5-1.5L5 8.25 8.5 4.5 10 6l-5 5z"></path></svg>`;
+let rightTpl = `<svg height="16" class="octicon octicon-chevron-right" viewBox="0 0 8 16" version="1.1" width="8" aria-hidden="true"> <path fill-rule="evenodd" d="M7.5 8l-5 5L1 11.5 4.75 8 1 4.5 2.5 3l5 5z"></path> </svg>`;
 let tpl = `
-        <div class="form-group">
-            <div class="input-group mb-3">
-                <div class="input-group-prepend">
-                    <button class="btn btn-outline-secondary" type="button">
-                        <svg height="16" class="octicon octicon-chevron-right" viewBox="0 0 8 16" version="1.1" width="8" aria-hidden="true">
-                            <path fill-rule="evenodd" d="M7.5 8l-5 5L1 11.5 4.75 8 1 4.5 2.5 3l5 5z"></path>
-                        </svg>
-                    </button>
-                </div>
-                <input type="text" class="form-control" placeholder="请输入规则内容" aria-label="title">
-                <div class="input-group-append">
-                    <button class="btn btn-outline-secondary addSiblings" type="button">+兄弟</button>
-                    <button class="btn btn-outline-secondary addChilds" type="button">+孩子</button>
-                    <span class="input-group-text dragBtn">
-                        <svg height="16" class="octicon octicon-three-bars" viewBox="0 0 12 16" version="1.1" width="8" aria-hidden="true">
-                            <path fill-rule="evenodd" d="M11.41 9H.59C0 9 0 8.59 0 8c0-.59 0-1 .59-1H11.4c.59 0 .59.41.59 1 0 .59 0 1-.59 1h.01zm0-4H.59C0 5 0 4.59 0 4c0-.59 0-1 .59-1H11.4c.59 0 .59.41.59 1 0 .59 0 1-.59 1h.01zM.59 11H11.4c.59 0 .59.41.59 1 0 .59 0 1-.59 1H.59C0 13 0 12.59 0 12c0-.59 0-1 .59-1z"></path>
-                        </svg>
-                    </span>
-                </div>
+    <div class="form-group">
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <button class="btn btn-outline-secondary" type="button">
+                    ${ downTpl }
+                </button>
             </div>
-        </div>`;
+            <input type="text" class="form-control" placeholder="请输入规则内容" aria-label="title">
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary addSiblings" type="button">+兄弟</button>
+                <button class="btn btn-outline-secondary addChilds" type="button">+孩子</button>
+                <span class="input-group-text dragBtn">
+                    <svg height="16" class="octicon octicon-three-bars" viewBox="0 0 12 16" version="1.1" width="8" aria-hidden="true"> <path fill-rule="evenodd" d="M11.41 9H.59C0 9 0 8.59 0 8c0-.59 0-1 .59-1H11.4c.59 0 .59.41.59 1 0 .59 0 1-.59 1h.01zm0-4H.59C0 5 0 4.59 0 4c0-.59 0-1 .59-1H11.4c.59 0 .59.41.59 1 0 .59 0 1-.59 1h.01zM.59 11H11.4c.59 0 .59.41.59 1 0 .59 0 1-.59 1H.59C0 13 0 12.59 0 12c0-.59 0-1 .59-1z"></path> </svg>
+                </span>
+            </div>
+        </div>
+    </div>`;
 let placeTagHtml = `<hr class="placeTag border border-danger">`;
 
 function init() {
     bindNodeEvents();
     bindDragEvents();
+
+    $('#configForm').append(tpl);
 }
 
 function bindNodeEvents() {
@@ -64,7 +64,7 @@ function bindDragEvents() {
         event.preventDefault();
     }).on('dragenter', function (event) {
         $enterTag = $getCurTarget(event);
-        if ($enterTag.is($dragged) || $.contains($dragged[0], $enterTag[0]) || $leaveTag.is($enterTag)) {
+        if ($enterTag.is($dragged) || $.contains($dragged[0], $enterTag[0])) {
             return false;
         }
         $('.placeTag').remove();
