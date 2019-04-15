@@ -18,7 +18,6 @@ let tpl = `
             </div>
         </div>
     </div>`;
-let placeTagHtml = `<hr class="placeTag border border-danger">`;
 
 function init() {
     bindNodeEvents();
@@ -67,15 +66,14 @@ function bindDragEvents() {
         if ($enterTag.is($dragged) || $.contains($dragged[0], $enterTag[0])) {
             return false;
         }
-        $('.placeTag').remove();
-        $enterTag.before(placeTagHtml);
+        $enterTag.addClass('shadow');
     }).on('dragleave', function (event) {
         $leaveTag = $getCurTarget(event);
         if ($leaveTag.is($dragged) || $.contains($dragged[0], $leaveTag[0]) || $leaveTag.is($enterTag)) {
             return false;
         }
 
-        $leaveTag.prev('.placeTag').remove();
+        $leaveTag.removeClass('shadow');
     }).on('dragend', function (event) {
         // 重置透明度
         $dragged.attr('draggable', "").css('opacity', '');
@@ -84,7 +82,7 @@ function bindDragEvents() {
         event.preventDefault();
         let $curTarget = $getCurTarget(event);
 
-        $curTarget.prev('.placeTag').remove();
+        $curTarget.removeClass('shadow');
 
         if ($curTarget.is($dragged) || $.contains($dragged[0], $curTarget[0])) {
             return false;
