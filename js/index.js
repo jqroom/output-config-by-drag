@@ -12,14 +12,15 @@ let tpl = `
                 <div class="input-group-append">
                     <button class="btn btn-outline-secondary addSiblings" type="button">+兄弟</button>
                     <button class="btn btn-outline-secondary addChilds" type="button">+孩子</button>
-                    <button class="btn btn-outline-secondary dragBtn" type="button">
+                    <span class="input-group-text dragBtn">
                         <svg height="16" class="octicon octicon-three-bars" viewBox="0 0 12 16" version="1.1" width="8" aria-hidden="true">
                             <path fill-rule="evenodd" d="M11.41 9H.59C0 9 0 8.59 0 8c0-.59 0-1 .59-1H11.4c.59 0 .59.41.59 1 0 .59 0 1-.59 1h.01zm0-4H.59C0 5 0 4.59 0 4c0-.59 0-1 .59-1H11.4c.59 0 .59.41.59 1 0 .59 0 1-.59 1h.01zM.59 11H11.4c.59 0 .59.41.59 1 0 .59 0 1-.59 1H.59C0 13 0 12.59 0 12c0-.59 0-1 .59-1z"></path>
                         </svg>
-                    </button>
+                    </span>
                 </div>
             </div>
         </div>`;
+let placeTagHtml = `<hr class="placeTag border border-danger">`;
 
 function init() {
     bindNodeEvents();
@@ -49,25 +50,32 @@ function bindNodeEvents() {
 }
 
 function bindDragEvents() {
+    let $enterTag = '';
+    let $leaveTag = '';
     let $dragged;
-    let moveHeight = 0;
     let $configForm = $('#configForm');
 
     $configForm.on('dragstart', function (event) {
         // 保存拖动元素的引用(ref.)
-        if ($(event.target).hasClass('form-group')) {
-            $dragged = $(event.target);
-            moveHeight = $dragged.outerHeight();
-            // 使其半透明
-            event.target.style.opacity = .5;
-        }
+        $dragged = $getCurTarget(event);
+        $dragged.css('opacity', '.5'); // 使其半透明
     }).on('dragover', function (event) {
         // prevent default to allow drop
         event.preventDefault();
     }).on('dragenter', function (event) {
-        $getCurTarget(event).css('margin-top', moveHeight);
+        $enterTag = $getCurTarget(event);
+        if ($enterTag.is($dragged) || $.contains($dragged[0], $enterTag[0]) || $leaveTag.is($enterTag)) {
+            return false;
+        }
+        $('.placeTag').remove();
+        $enterTag.before(placeTagHtml);
     }).on('dragleave', function (event) {
-        $getCurTarget(event).css('margin-top', 0);
+        $leaveTag = $getCurTarget(event);
+        if ($leaveTag.is($dragged) || $.contains($dragged[0], $leaveTag[0]) || $leaveTag.is($enterTag)) {
+            return false;
+        }
+
+        $leaveTag.prev('.placeTag').remove();
     }).on('dragend', function (event) {
         // 重置透明度
         $dragged.attr('draggable', "").css('opacity', '');
@@ -75,21 +83,23 @@ function bindDragEvents() {
         // 阻止默认动作（如打开一些元素的链接）
         event.preventDefault();
         let $curTarget = $getCurTarget(event);
-        $curTarget.css('margin-top', 0);
 
-        if($curTarget.is($dragged)){
-            console.log(11);
+        $curTarget.prev('.placeTag').remove();
+
+        if ($curTarget.is($dragged) || $.contains($dragged[0], $curTarget[0])) {
             return false;
         }
 
-        $curTarget.before($dragged.css('opacity', '').remove());
+        $curTarget.before($dragged.css('opacity', '').remove()).focus();
     });
 }
 
-function $getCurTarget(target){
+function $getCurTarget(target) {
     let $curTarget = $(event.target);
 
-    if ($curTarget.hasClass('childContent') || ($curTarget.hasClass('form-group') && $curTarget.find('.childContent').size() > 0)) {
+    if ($curTarget.hasClass('form-group')) {
+        $curTarget = $curTarget;
+    } else if ($curTarget.hasClass('childContent')) {
         $curTarget = $curTarget.find('.form-group').eq(0);
     } else {
         $curTarget = $curTarget.parents('.form-group').eq(0);
