@@ -1,23 +1,23 @@
 let downTpl = `<svg height="16" class="octicon octicon-chevron-down" viewBox="0 0 10 16" version="1.1" width="10" aria-hidden="true"><path fill-rule="evenodd" d="M5 11L0 6l1.5-1.5L5 8.25 8.5 4.5 10 6l-5 5z"></path></svg>`;
-let rightTpl = `<svg height="16" class="octicon octicon-chevron-right" viewBox="0 0 8 16" version="1.1" width="8" aria-hidden="true"> <path fill-rule="evenodd" d="M7.5 8l-5 5L1 11.5 4.75 8 1 4.5 2.5 3l5 5z"></path> </svg>`;
+let rightTpl = `<svg height="16" class="octicon octicon-chevron-right" viewBox="0 0 8 16" version="1.1" width="8" aria-hidden="true"> <path fill-rule="evenodd" d="M7.5 8l-5 5L1 11.5 4.75 8 1 4.5 2.5 3l5 5z"></path></svg>`;
 let tpl = `
-    <div class="form-group">
-        <div class="input-group mb-3">
-            <div class="input-group-prepend">
-                <button class="btn btn-outline-secondary" type="button">
-                    ${ downTpl }
-                </button>
-            </div>
-            <input type="text" class="form-control" placeholder="请输入规则内容" aria-label="title">
-            <div class="input-group-append">
-                <button class="btn btn-outline-secondary addSiblings" type="button">+兄弟</button>
-                <button class="btn btn-outline-secondary addChilds" type="button">+孩子</button>
-                <span class="input-group-text dragBtn">
-                    <svg height="16" class="octicon octicon-three-bars" viewBox="0 0 12 16" version="1.1" width="8" aria-hidden="true"> <path fill-rule="evenodd" d="M11.41 9H.59C0 9 0 8.59 0 8c0-.59 0-1 .59-1H11.4c.59 0 .59.41.59 1 0 .59 0 1-.59 1h.01zm0-4H.59C0 5 0 4.59 0 4c0-.59 0-1 .59-1H11.4c.59 0 .59.41.59 1 0 .59 0 1-.59 1h.01zM.59 11H11.4c.59 0 .59.41.59 1 0 .59 0 1-.59 1H.59C0 13 0 12.59 0 12c0-.59 0-1 .59-1z"></path> </svg>
-                </span>
-            </div>
+<div class="form-group">
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <button class="btn btn-outline-secondary collapseBtn" type="button">
+                ${ downTpl }
+            </button>
         </div>
-    </div>`;
+        <input type="text" class="form-control" placeholder="请输入规则内容" aria-label="title">
+        <div class="input-group-append">
+            <button class="btn btn-outline-secondary addSiblings" type="button">+兄弟</button>
+            <button class="btn btn-outline-secondary addChilds" type="button">+孩子</button>
+            <span class="input-group-text dragBtn">
+                <svg height="16" class="octicon octicon-three-bars" viewBox="0 0 12 16" version="1.1" width="8" aria-hidden="true"> <path fill-rule="evenodd" d="M11.41 9H.59C0 9 0 8.59 0 8c0-.59 0-1 .59-1H11.4c.59 0 .59.41.59 1 0 .59 0 1-.59 1h.01zm0-4H.59C0 5 0 4.59 0 4c0-.59 0-1 .59-1H11.4c.59 0 .59.41.59 1 0 .59 0 1-.59 1h.01zM.59 11H11.4c.59 0 .59.41.59 1 0 .59 0 1-.59 1H.59C0 13 0 12.59 0 12c0-.59 0-1 .59-1z"></path> </svg>
+            </span>
+        </div>
+    </div>
+</div>`;
 
 function init() {
     bindNodeEvents();
@@ -35,16 +35,29 @@ function bindNodeEvents() {
         let $this = $(this);
         let $closestFormGroup = $this.parents('.form-group').eq(0);
         let curTpl = tpl;
-        if ($closestFormGroup.find('.childContent').size() <= 0) {
-            curTpl = `<div class="childContent ml-3">${ tpl }</div>`
+        if ($closestFormGroup.find('>.childContent').size() <= 0) {
+            curTpl = `<div class="childContent ml-3 collapse show">${ tpl }</div>`
         } else {
-            $closestFormGroup = $closestFormGroup.find('.childContent');
+            $closestFormGroup = $closestFormGroup.find('>.childContent').addClass('show');
+            $closestFormGroup.find('>.collapseBtn').html(downTpl);
         }
         $closestFormGroup.append(curTpl);
     }).on('mouseenter', '.dragBtn', function () {
         $(this).parents('.form-group').eq(0).attr('draggable', "true");
     }).on('mouseleave', '.dragBtn', function () {
         $(this).parents('.form-group').eq(0).attr('draggable', "");
+    }).on('click', '.collapseBtn', function () {
+        let $this = $(this);
+        let $closestFormGroup = $this.parents('.form-group').eq(0);
+        let $toggleTarget = $closestFormGroup.find('>.childContent');
+
+        if ($toggleTarget.hasClass('show')) {
+            $toggleTarget.collapse('hide');
+            $this.html(rightTpl);
+        } else {
+            $toggleTarget.collapse('show');
+            $this.html(downTpl);
+        }
     });
 }
 
@@ -104,6 +117,25 @@ function $getCurTarget(target) {
     }
 
     return $curTarget;
+}
+
+function getCurNavIndex(target, type) {
+    let levelArr = [$(target).index() + 1];
+    let $parensFormGroup = $(target).parents('.form-group');
+    $parensFormGroup.each((index, value) => {
+        levelArr.push($(value).index() + 1);
+    });
+
+    if (type == 'addSibling') {
+        levelArr.pop();
+        levelArr.push($(target).siblings().size() + 2); // 漏了自己和新增的那个，所以要加2
+    }
+
+    return levelArr.reverse();
+}
+
+function getFormatSelector(arr) {
+    return `.form-group:eq(${ arr.reduce((sum, cur) => sum + cur, 0) - 1 }) > .childContent`;
 }
 
 init();
