@@ -143,7 +143,7 @@ function getCurNavIndex(target, type) {
         levelArr.push($target.find('>.childContent').find('>.form-group').size() + 1); // 漏了自己和新增的那个，所以要加2
     }
 
-    return levelArr;  // 倒序从里到外
+    return levelArr; // 倒序从里到外
 }
 
 function outputConfig() {
@@ -152,19 +152,41 @@ function outputConfig() {
     $('.form-group').each((i, v) => {
         let curIndexArr = getCurNavIndex(v);
         let objIndexArr = [].concat(curIndexArr).reverse();
-        let curObj = curIndexArr.reduce((last, cur) => {
-            let obj = {};
-            obj[cur] = last;
-            return obj;
-        }, {
+        let curObj = curIndexArr.reduce((last, cur) => ({
+            [cur]: last
+        }), {
             index: objIndexArr.join('.'),
             value: $(v).find('>.input-group').find('>input').val()
         });
 
-        console.log(curObj);
+        mergeDeep(config, curObj);
     });
 
-    // console.log(config);
+    console.log(config);
+}
+
+function mergeDeep(target, ...sources) {
+    if (!sources.length) return target;
+    const source = sources.shift();
+
+    if (getType(target) == 'object' && getType(source) == 'object') {
+        for (const key in source) {
+            if (getType(source[key]) == 'object') {
+                if (!target[key]) {
+                    Object.assign(target, {
+                        [key]: {}
+                    });
+                }
+                mergeDeep(target[key], source[key]);
+            } else {
+                Object.assign(target, {
+                    [key]: source[key]
+                });
+            }
+        }
+    }
+
+    return mergeDeep(target, ...sources);
 }
 
 function getType(obj) {
