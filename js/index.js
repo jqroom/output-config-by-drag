@@ -59,11 +59,11 @@ function bindNodeEvents() {
         }
     });
 
-    $('#deleteNodePop').on('show.bs.modal', function(event){
+    $('#deleteNodePop').on('show.bs.modal', function (event) {
         let $this = $(event.relatedTarget);
         let $closestFormGroup = $this.parents('.form-group').eq(0);
         $deleteTag = $closestFormGroup.addClass('delete-shadow');
-    }).on('hide.bs.modal', function(event){
+    }).on('hide.bs.modal', function (event) {
         $deleteTag.removeClass('delete-shadow');
     }).on('click', '.deleteBtn', function () {
         $('#deleteNodePop').modal('hide')
@@ -143,11 +143,28 @@ function getCurNavIndex(target, type) {
         levelArr.push($target.find('>.childContent').find('>.form-group').size() + 1); // 漏了自己和新增的那个，所以要加2
     }
 
-    return levelArr;
+    return levelArr;  // 倒序从里到外
 }
 
-function getFormatSelector(arr) {
-    return `.form-group:eq(${ arr.reduce((sum, cur) => sum + cur, 0) - 1 }) > .childContent`;
+function outputConfig() {
+    let config = {};
+
+    $('.form-group').each((i, v) => {
+        let curIndexArr = getCurNavIndex(v);
+        let objIndexArr = [].concat(curIndexArr).reverse();
+        let curObj = curIndexArr.reduce((last, cur) => {
+            let obj = {};
+            obj[cur] = last;
+            return obj;
+        }, {
+            index: objIndexArr.join('.'),
+            value: $(v).find('>.input-group').find('>input').val()
+        });
+
+        console.log(curObj);
+    });
+
+    // console.log(config);
 }
 
 function getType(obj) {
