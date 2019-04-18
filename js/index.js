@@ -23,6 +23,27 @@ function init() {
     bindDragEvents();
 
     $('#configForm').append(tpl);
+
+    bindCopyEvent();
+}
+
+function bindCopyEvent(){
+    $('.copyBtn').tooltip({
+        title: '复制成功',
+        placement: 'bottom',
+        trigger: 'click'
+    });
+
+    let tooltipsTimer = null;
+    let clipboard = new ClipboardJS('.copyBtn');
+
+    clipboard.on('success', function () {
+        clearTimeout(tooltipsTimer);
+        $('.copyBtn').tooltip('show');
+        tooltipsTimer = setTimeout(() => {
+            $('.copyBtn').tooltip('hide');
+        }, 1000);
+    });
 }
 
 function bindNodeEvents() {
@@ -68,6 +89,13 @@ function bindNodeEvents() {
     }).on('click', '.deleteBtn', function () {
         $('#deleteNodePop').modal('hide')
         $deleteTag.remove();
+    });
+
+    $('#outputPop').on('show.bs.modal', function(event){
+        let config = outputConfig();
+        $('#outputPop').find('.modal-body').find('code').html(JSON.stringify(config, null, 2));
+    }).on('click', '.copyBtn', function(){
+
     });
 }
 
@@ -163,6 +191,7 @@ function outputConfig() {
     });
 
     console.log(config);
+    return config;
 }
 
 function mergeDeep(target, ...sources) {

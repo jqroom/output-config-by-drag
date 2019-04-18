@@ -23,32 +23,56 @@
 
 <body>
     <div class="container">
-        <form id="configForm" class="mt-3"></form>
+        <h2 class="text-center">通过拖动生成配置</h1>
+            <div class="d-flex justify-content-between">
+                <button type="button" class="btn btn-primary">加载配置</button>
+                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#outputPop">生成配置</button>
+            </div>
 
-        <div id="deleteNodePop" class="modal" tabindex="-1" role="dialog">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">温馨提示</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <p>是否确定删除此节点?</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="deleteBtn btn btn-primary">确定</button>
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+            <form id="configForm" class="mt-3"></form>
+
+            <div id="deleteNodePop" class="modal" tabindex="-1" role="dialog">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">温馨提示</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <p>是否确定删除此节点?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="deleteBtn btn btn-primary">确定</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+
+            <div id="outputPop" class="modal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title" id="myLargeModalLabel">output json</h4>
+                            <button type="button" class="copyBtn btn btn-secondary mx-auto" data-clipboard-action="copy" data-clipboard-target="#outputJson">复制</button>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">×</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <pre class="pre-scrollable"><code id="outputJson"></code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
     </div>
 
     <script src="js/jquery.min.js" charset="utf-8"></script>
-    <script src="js/popper.min.js"></script>
+    <script src="js/popper.min.js" charset="utf-8"></script>
     <script src="js/bootstrap.min.js" charset="utf-8"></script>
+    <script src="js/clipboard.min.js" charset="utf-8"></script>
     <script src="js/icons.js" charset="utf-8"></script>
     <script src="js/index.js" charset="utf-8"></script>
 </body>
