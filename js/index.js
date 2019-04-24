@@ -92,10 +92,15 @@ function bindNodeEvents() {
     });
 
     $('#outputPop').on('show.bs.modal', function(event){
-        let config = outputConfig();
-        $('#outputPop').find('.modal-body').find('code').html(JSON.stringify(config, null, 2));
-    }).on('click', '.copyBtn', function(){
+        let type = $(event.relatedTarget).data('type');
+        let config = {};
+        if(type == 'way1'){
+            config = outputConfig();
+        }else if(type == 'way2'){
+            config = outputConfig2();
+        }
 
+        $('#outputPop').find('.modal-body').find('code').html(JSON.stringify(config, null, 2));
     });
 }
 
@@ -174,7 +179,9 @@ function getCurNavIndex(target, type) {
     return levelArr; // 倒序从里到外
 }
 
+// 第一种方案生成json数据
 function outputConfig() {
+    console.time('way1');
     let config = {};
 
     $('.form-group').each((i, v) => {
@@ -190,7 +197,7 @@ function outputConfig() {
         mergeDeep(config, curObj);
     });
 
-    console.log(config);
+    console.timeEnd('way1');
     return config;
 }
 
@@ -220,6 +227,34 @@ function mergeDeep(target, ...sources) {
 
 function getType(obj) {
     return Object.prototype.toString.call(obj).slice(8, -1).toLocaleLowerCase();
+}
+
+
+// 第二种方案获取生成json数据
+function outputConfig2(){
+    console.time('way2');
+    let config = {}
+
+    recursive($('#configForm'), config);
+    
+    console.timeEnd('way2');
+    return config;
+}
+
+function recursive($target, lastConfig, lastIndexArr = []){
+    $target.find('>.form-group').each((i, v) => {
+        let indexArr = [].concat(lastIndexArr);  // 创造一个新数组，这样就不会对之前的数据有影响
+        indexArr.push(i + 1);
+
+        lastConfig[i + 1] = {
+            index: indexArr.join('.'),
+            value: $(v).find('>.input-group').find('>input').val()
+        }
+
+        if($(v).find('>.childContent').size() > 0){
+            recursive($(v).find('>.childContent'), lastConfig[i + 1], indexArr);
+        }
+    });
 }
 
 init();
