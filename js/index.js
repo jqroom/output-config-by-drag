@@ -24,10 +24,53 @@ function init() {
 
     $('#configForm').append(tpl);
 
-    bindCopyEvent();
+    bindCopyEvents();
+    bindFileEvents();
 }
 
-function bindCopyEvent(){
+function bindFileEvents() {
+    let $fileInfo = $('#fileInfo');
+
+    $('#inputFile').on('change', function (event) {
+        let file = this.files[0];
+
+        if (file && (file.type == 'application/json' || file.type == 'text/javascript')) {
+            let reader = new FileReader();
+            reader.readAsText(file, "UTF-8");
+            reader.onload = function (evt) {
+                let result = evt.target.result;
+                if(result.indexOf('=') > 0){
+                    result = result.split('=')[1];  // 获取等号(=)后的json数据字符串
+                }
+                let jsonData = {};
+                try {
+                    jsonData = JSON.parse(result);
+                } catch (e) {
+                    console.log('文件数据解析失败！', e);
+                }
+                console.log(jsonData && jsonData['1']);
+            }
+            reader.onerror = function (evt) {
+                console.log("文件加载失败！");
+            }
+            $fileInfo.text(`${ file.name }  ${ getFriendlySize(file.size) }`);
+        }else{
+            console.log('请选择一个js或者json后缀的文件！');
+        }
+    });
+}
+
+function getFriendlySize(nBytes) {
+    let sOutput = nBytes + " bytes";
+    // optional code for multiples approximation
+    for (let aMultiples = ["KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"], nMultiple = 0, nApprox = nBytes / 1024; nApprox > 1; nApprox /= 1024, nMultiple++) {
+        sOutput = nApprox.toFixed(3) + " " + aMultiples[nMultiple] + " (" + nBytes + " bytes)";
+    }
+
+    return sOutput;
+}
+
+function bindCopyEvents() {
     $('.copyBtn').tooltip({
         title: '复制成功',
         placement: 'bottom',
@@ -91,12 +134,12 @@ function bindNodeEvents() {
         $deleteTag.remove();
     });
 
-    $('#outputPop').on('show.bs.modal', function(event){
+    $('#outputPop').on('show.bs.modal', function (event) {
         let type = $(event.relatedTarget).data('type');
         let config = {};
-        if(type == 'way1'){
+        if (type == 'way1') {
             config = outputConfig();
-        }else if(type == 'way2'){
+        } else if (type == 'way2') {
             config = outputConfig2();
         }
 
@@ -119,24 +162,44 @@ function bindDragEvents() {
         event.preventDefault();
     }).on('dragenter', function (event) {
         $enterTag = $getCurTarget(event);
+        if (!$enterTag.hasClass('form-group') || !$dragged) {
+            event.stopPropagation();
+            event.preventDefault();
+            return;
+        }
         if ($enterTag.is($dragged) || $.contains($dragged[0], $enterTag[0])) {
             return false;
         }
         $enterTag.addClass('shadow');
     }).on('dragleave', function (event) {
         $leaveTag = $getCurTarget(event);
+
+        if (!$leaveTag.hasClass('form-group') || !$dragged) {
+            event.stopPropagation();
+            event.preventDefault();
+            return;
+        }
+
         if ($leaveTag.is($dragged) || $.contains($dragged[0], $leaveTag[0]) || $leaveTag.is($enterTag)) {
             return false;
         }
 
         $leaveTag.removeClass('shadow');
     }).on('dragend', function (event) {
+        if (!$dragged) {
+            return;
+        }
         // 重置透明度
         $('.shadow').removeClass('shadow');
         $dragged.attr('draggable', "").css('opacity', '');
     }).on('drop', function (event) {
         // 阻止默认动作（如打开一些元素的链接）
         event.preventDefault();
+
+        if (!$dragged) {
+            return;
+        }
+
         let $curTarget = $getCurTarget(event);
 
         if ($curTarget.is($dragged) || $.contains($dragged[0], $curTarget[0])) {
@@ -231,19 +294,20 @@ function getType(obj) {
 
 
 // 第二种方案获取生成json数据
-function outputConfig2(){
+function outputConfig2() {
     console.time('way2');
     let config = {}
 
     recursive($('#configForm'), config);
-    
+
     console.timeEnd('way2');
     return config;
 }
 
-function recursive($target, lastConfig, lastIndexArr = []){
+// 深度优先的遍历方式
+function recursive($target, lastConfig, lastIndexArr = []) {
     $target.find('>.form-group').each((i, v) => {
-        let indexArr = [].concat(lastIndexArr);  // 创造一个新数组，这样就不会对之前的数据有影响
+        let indexArr = [].concat(lastIndexArr); // 创造一个新数组，这样就不会对之前的数据有影响
         indexArr.push(i + 1);
 
         lastConfig[i + 1] = {
@@ -251,7 +315,7 @@ function recursive($target, lastConfig, lastIndexArr = []){
             value: $(v).find('>.input-group').find('>input').val()
         }
 
-        if($(v).find('>.childContent').size() > 0){
+        if ($(v).find('>.childContent').size() > 0) {
             recursive($(v).find('>.childContent'), lastConfig[i + 1], indexArr);
         }
     });
