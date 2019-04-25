@@ -39,8 +39,8 @@ function bindFileEvents() {
             reader.readAsText(file, "UTF-8");
             reader.onload = function (evt) {
                 let result = evt.target.result;
-                if(result.indexOf('=') > 0){
-                    result = result.split('=')[1];  // 获取等号(=)后的json数据字符串
+                if (result.indexOf('=') > 0) {
+                    result = result.split('=')[1]; // 获取等号(=)后的json数据字符串
                 }
                 let jsonData = {};
                 try {
@@ -54,8 +54,17 @@ function bindFileEvents() {
                 console.log("文件加载失败！");
             }
             $fileInfo.text(`${ file.name }  ${ getFriendlySize(file.size) }`);
-        }else{
+        } else {
             console.log('请选择一个js或者json后缀的文件！');
+        }
+    });
+
+    $('.downloadBtn').on('click', function(){
+        let type = $(this).data('type');
+        if(type == 'js'){
+            download('text/javascript');
+        }else if(type == 'json'){
+            download('application/json');
         }
     });
 }
@@ -68,6 +77,12 @@ function getFriendlySize(nBytes) {
     }
 
     return sOutput;
+}
+
+// 下载文件
+function setDownloadUrl(target, text, name, type) {
+    target.href = URL.createObjectURL(new Blob([text], { type: type }));
+    target.download = name;
 }
 
 function bindCopyEvents() {
@@ -142,8 +157,13 @@ function bindNodeEvents() {
         } else if (type == 'way2') {
             config = outputConfig2();
         }
+        let stringConfig = JSON.stringify(config, null, 4);
 
-        $('#outputPop').find('.modal-body').find('code').html(JSON.stringify(config, null, 2));
+        setDownloadUrl($('.jsDownloadBtn')[0], `var config = ${ stringConfig };`, 'config', 'text/javascript');
+        setDownloadUrl($('.jsonDownloadBtn')[0], stringConfig, 'config', 'application/json');
+        setDownloadUrl($('.txtDownloadBtn')[0], stringConfig, 'config', 'text/plain');
+
+        $('#outputPop').find('.modal-body').find('code').html(stringConfig);
     });
 }
 
