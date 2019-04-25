@@ -3,4 +3,4 @@ var config = {
         "index": "1",
         "value": ""
     }
-}
+};
